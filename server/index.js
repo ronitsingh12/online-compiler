@@ -1,16 +1,17 @@
-//index.js
-
 const express = require("express");
 const cors = require("cors");
 const Axios = require("axios");
+const path = require('path');
 const app = express();
 const PORT = 8000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// API Route for code compilation
 app.post("/compile", (req, res) => {
-    // getting the required data from the request
+    // Extracting required data from the request
     let code = req.body.code;
     let language = req.body.language;
     let input = req.body.input;
@@ -47,7 +48,7 @@ app.post("/compile", (req, res) => {
         data: data
     };
 
-    // calling the code compilation API
+    // Calling the code compilation API
     Axios(config)
         .then((response) => {
             res.json(response.data.run);  // Send the run object directly
@@ -58,6 +59,15 @@ app.post("/compile", (req, res) => {
         });
 });
 
+// Serve React build files after build
+app.use(express.static(path.join(__dirname, '../build')));
+
+// Catch-all to serve index.html for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
+
+// Start the server
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
