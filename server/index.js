@@ -1,10 +1,11 @@
-//index.js
+// index.js
+require('dotenv').config(); // Load environment variables
 
 const express = require("express");
 const cors = require("cors");
 const Axios = require("axios");
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -40,7 +41,7 @@ app.post("/compile", (req, res) => {
 
     let config = {
         method: 'post',
-        url: 'https://emkc.org/api/v2/piston/execute',
+        url: process.env.BACKEND_URL, // Use environment variable for the API URL
         headers: {
             'Content-Type': 'application/json'
         },
@@ -53,11 +54,15 @@ app.post("/compile", (req, res) => {
             res.json(response.data.run);  // Send the run object directly
             console.log(response.data);
         }).catch((error) => {
-            console.log(error);
-            res.status(500).send({ error: "Something went wrong" });
+            console.error('Error:', error.response ? error.response.data : error.message);
+            res.status(500).send({ error: "Something went wrong", details: error.message });
         });
 });
 
-app.listen(process.env.PORT || PORT, '0.0.0.0', () => {
-    console.log(`Server listening on port ${process.env.PORT || PORT}`);
+app.use(cors({
+    origin: process.env.FRONTEND_URL // Use environment variable for frontend URL
+}));
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server listening on port ${PORT}`);
 });
